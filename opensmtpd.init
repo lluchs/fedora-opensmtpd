@@ -1,0 +1,90 @@
+#!/bin/bash
+#
+# opensmtpd  This shell script takes care of starting and stopping
+#            OpenSMTPD on RedHat or other chkconfig-based system.
+#
+# chkconfig: 2345 80 30
+# processname: smtpd
+# config: /etc/opensmtpd/smtpd.conf
+# pidfile: /var/run/smtpd.pid
+#
+# description: OpenSMTPD is a Mail Transport Agent, which is the program \
+#              that moves mail from one machine to another.
+
+### BEGIN INIT INFO
+# Provides: opensmtpd
+# Required-Start: $network
+# Required-Stop: $network
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: start and stop opensmtpd
+# Description: OpenSMTPD is a Mail Transport Agent, which is the program \
+#              that moves mail from one machine to another.
+### END INIT INFO
+
+# Contributed by Denis Fateyev <denis@fateyev.com>
+# 2013.06.08
+
+# Source function library
+. /etc/init.d/functions
+
+# Source networking configuration
+[ -r /etc/sysconfig/network ] && . /etc/sysconfig/network
+
+start() {
+	[ "$EUID" != "0" ] && exit 4
+	[ "${NETWORKING}" = "no" ] && exit 1
+	[ -f /usr/sbin/smtpd ] || exit 5
+
+        # Start daemon
+        echo -n $"Starting opensmtpd: "
+        /usr/sbin/smtpd && success || failure
+        RETVAL=$?
+        echo
+        [ $RETVAL = 0 ] && touch /var/lock/subsys/smtpd
+}
+
+stop() {
+	[ "$EUID" != "0" ] && exit 4
+
+        # Stop daemon
+        echo -n $"Shutting down opensmtpd: "
+        if [ -n "`pidfileofproc smtpd`" ] ; then
+	    /usr/sbin/smtpctl stop > /dev/null 2>&1 && success || failure
+	else
+	    failure $"Shutting down opensmtpd"
+	fi
+	RETVAL=$?
+        echo
+        [ $RETVAL = 0 ] && rm -f /var/lock/subsys/smtpd
+}
+
+restart() {
+	stop
+	start
+}
+
+# See how we were called
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart)
+	restart
+	;;
+  condrestart|try-restart)
+	status smtpd > /dev/null || exit 0
+	restart
+	;;
+  status)
+	status smtpd
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart|status|condrestart|try-restart}"
+	exit 2
+esac
+
+exit $RETVAL
