@@ -13,13 +13,13 @@
 
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
-Version:	5.4.1p1
+Version:	5.4.2p1
 Release:	1%{?prerelease:.%{prerelease}}%{?dist}
+
 License:	ISC
 URL:		http://www.opensmtpd.org/
 Group:		System Environment/Daemons
 Provides:	MTA smtpd smtpdaemon server(smtp)
-Buildroot:	%{_tmppath}/%{name}-%{version}-%{release}-root
 
 %if 0%{?prerelease}
 Source0:	http://www.opensmtpd.org/archives/%{name}-%{prerelease}p1.tar.gz
@@ -87,6 +87,7 @@ export LDFLAGS="$LDFLAGS -L%{_libdir}/libdb4"
     --with-mantype=man \
     %if 0%{?_with_pam}
     --with-pam \
+    --with-pam-service=smtp \
     %endif
     --with-privsep-user=smtpd \
     --with-queue-user=smtpq \
@@ -113,9 +114,10 @@ mv %{buildroot}/%{_sbindir}/makemap %{buildroot}/%{_sbindir}/makemap.%{name}
 ln -s %{_sbindir}/smtpctl %{buildroot}/%{_sbindir}/sendmail.%{name}
 ln -s %{_sbindir}/smtpctl %{buildroot}/%{_bindir}/mailq.%{name}
 ln -s %{_sbindir}/makemap.%{name} %{buildroot}/%{_bindir}/newaliases.%{name}
+mv %{buildroot}/%{_mandir}/man5/aliases.5 %{buildroot}/%{_mandir}/man5/aliases.opensmtpd.5
 mv %{buildroot}/%{_mandir}/man8/sendmail.8 %{buildroot}/%{_mandir}/man8/sendmail.opensmtpd.8
 mv %{buildroot}/%{_mandir}/man8/makemap.8 %{buildroot}/%{_mandir}/man8/makemap.opensmtpd.8
-mv %{buildroot}/%{_mandir}/man5/aliases.5 %{buildroot}/%{_mandir}/man5/aliases.opensmtpd.5
+mv %{buildroot}/%{_mandir}/man8/smtpd.8 %{buildroot}/%{_mandir}/man8/smtpd.opensmtpd.8
 # fix aliases path in the config
 sed -i -e 's|/etc/mail/aliases|/etc/aliases|g' %{buildroot}/%{_sysconfdir}/opensmtpd/smtpd.conf
 
@@ -145,6 +147,7 @@ exit 0
 	--slave %{_mandir}/man1/newaliases.1.gz mta-newaliasesman %{_mandir}/man8/newaliases.8.gz \
 	--slave %{_mandir}/man5/aliases.5.gz mta-aliasesman %{_mandir}/man5/aliases.opensmtpd.5.gz \
 	--slave %{_mandir}/man8/sendmail.8.gz mta-sendmailman %{_mandir}/man8/sendmail.opensmtpd.8.gz \
+	--slave %{_mandir}/man8/smtpd.8.gz mta-smtpdman %{_mandir}/man8/smtpd.opensmtpd.8.gz \
 	--initscript opensmtpd
 exit 0
 
@@ -204,6 +207,10 @@ exit 0
 
 
 %changelog
+* Thu Mar 06 2014 Denis Fateyev <denis@fateyev.com> - 5.4.2p1-1
+- Small enhancements, man-page and pam fixes
+- Update to 5.4.2 release
+
 * Mon Dec 09 2013 Denis Fateyev <denis@fateyev.com> - 5.4.1p1-1
 - Multiple enhancements, systemd migration, spec cleanup
 - Update to 5.4.1 release
