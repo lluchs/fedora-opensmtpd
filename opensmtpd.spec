@@ -14,7 +14,7 @@
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
 Version:	5.4.2p1
-Release:	1%{?prerelease:.%{prerelease}}%{?dist}
+Release:	2%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
 URL:		http://www.opensmtpd.org/
@@ -207,6 +207,9 @@ exit 0
 
 
 %changelog
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 5.4.2p1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Thu Mar 06 2014 Denis Fateyev <denis@fateyev.com> - 5.4.2p1-1
 - Small enhancements, man-page and pam fixes
 - Update to 5.4.2 release
