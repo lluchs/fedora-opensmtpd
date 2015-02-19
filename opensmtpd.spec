@@ -1,5 +1,5 @@
 
-## global prerelease	201312021558
+## global prerelease	201502012312
 
 %if 0%{?rhel} >= 7
 %global _with_systemd	1
@@ -13,8 +13,8 @@
 
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
-Version:	5.4.2p1
-Release:	3%{?prerelease:.%{prerelease}}%{?dist}
+Version:	5.4.4p1
+Release:	1%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
 URL:		http://www.opensmtpd.org/
@@ -37,6 +37,7 @@ BuildRequires:	libdb4-devel
 %else
 BuildRequires:	db4-devel
 %endif
+BuildRequires:	libasr-devel >= 1.0.1
 BuildRequires:	libevent-devel
 BuildRequires:	openssl-devel
 BuildRequires:	bison
@@ -207,6 +208,9 @@ exit 0
 
 
 %changelog
+* Thu Feb 19 2015 Denis Fateyev <denis@fateyev.com> - 5.4.4p1-1
+- Update to 5.4.4 release
+
 * Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 5.4.2p1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
