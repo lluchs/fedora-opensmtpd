@@ -13,7 +13,7 @@
 
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
-Version:	5.4.4p1
+Version:	5.4.5p2
 Release:	1%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
@@ -22,7 +22,7 @@ Group:		System Environment/Daemons
 Provides:	MTA smtpd smtpdaemon server(smtp)
 
 %if 0%{?prerelease}
-Source0:	http://www.opensmtpd.org/archives/%{name}-%{prerelease}p1.tar.gz
+Source0:	http://www.opensmtpd.org/archives/%{name}-%{prerelease}p2.tar.gz
 %else
 Source0:	http://www.opensmtpd.org/archives/%{name}-%{version}.tar.gz
 %endif
@@ -208,6 +208,9 @@ exit 0
 
 
 %changelog
+* Thu Apr 30 2015 Denis Fateyev <denis@fateyev.com> - 5.4.5p2-1
+- Update to 5.4.5 release
+
 * Thu Feb 19 2015 Denis Fateyev <denis@fateyev.com> - 5.4.4p1-1
 - Update to 5.4.4 release
 
