@@ -13,8 +13,8 @@
 
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
-Version:	5.4.5p2
-Release:	2%{?prerelease:.%{prerelease}}%{?dist}
+Version:	5.4.6p1
+Release:	1%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
 URL:		http://www.opensmtpd.org/
@@ -22,7 +22,7 @@ Group:		System Environment/Daemons
 Provides:	MTA smtpd smtpdaemon server(smtp)
 
 %if 0%{?prerelease}
-Source0:	http://www.opensmtpd.org/archives/%{name}-%{prerelease}p2.tar.gz
+Source0:	http://www.opensmtpd.org/archives/%{name}-%{prerelease}p1.tar.gz
 %else
 Source0:	http://www.opensmtpd.org/archives/%{name}-%{version}.tar.gz
 %endif
@@ -150,6 +150,10 @@ exit 0
 	--slave %{_mandir}/man8/sendmail.8.gz mta-sendmailman %{_mandir}/man8/sendmail.opensmtpd.8.gz \
 	--slave %{_mandir}/man8/smtpd.8.gz mta-smtpdman %{_mandir}/man8/smtpd.opensmtpd.8.gz \
 	--initscript opensmtpd
+# fix spool dir permissions
+if [ -d "/var/spool/smtpd/purge" ]; then
+	chmod 0700 /var/spool/smtpd/purge
+fi
 exit 0
 
 %preun
@@ -208,6 +212,9 @@ exit 0
 
 
 %changelog
+* Tue Jun 23 2015 Denis Fateyev <denis@fateyev.com> - 5.4.6p1-1
+- Update to 5.4.6 release
+
 * Thu Jun 18 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 5.4.5p2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 
