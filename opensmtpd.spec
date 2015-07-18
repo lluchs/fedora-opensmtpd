@@ -1,5 +1,5 @@
 
-## global prerelease	201502012312
+## global prerelease	201506020910
 
 %if 0%{?rhel} >= 7
 %global _with_systemd	1
@@ -11,9 +11,12 @@
 # PAM support
 %global _with_pam	1
 
+# Berkeley DB support
+%global _with_bdb4	1
+
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
-Version:	5.4.6p1
+Version:	5.7.1p1
 Release:	1%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
@@ -32,10 +35,12 @@ Source2:	opensmtpd.init
 Source3:	opensmtpd.pam
 
 # not related to systemd but can set proper dependency
+%if 0%{?_with_bdb4}
 %if 0%{?_with_systemd}
 BuildRequires:	libdb4-devel
 %else
 BuildRequires:	db4-devel
+%endif
 %endif
 BuildRequires:	libasr-devel >= 1.0.1
 BuildRequires:	libevent-devel
@@ -78,9 +83,13 @@ back to Sendmail as a default mail daemon.
 %setup -q %{?prerelease: -n %{name}-%{prerelease}p1}
 
 %build
+export CFLAGS="%{optflags}"
+
 # db4 paths
-export CFLAGS="$CFLAGS -g -I%{_includedir}/libdb4"
+%if 0%{?_with_bdb4}
+export CFLAGS="$CFLAGS -I%{_includedir}/libdb4"
 export LDFLAGS="$LDFLAGS -L%{_libdir}/libdb4"
+%endif
 
 %configure \
     --sysconfdir=%{_sysconfdir}/opensmtpd \
@@ -89,6 +98,9 @@ export LDFLAGS="$LDFLAGS -L%{_libdir}/libdb4"
     %if 0%{?_with_pam}
     --with-pam \
     --with-pam-service=smtp \
+    %endif
+    %if 0%{?_with_bdb4}
+    --enable-table-db \
     %endif
     --with-privsep-user=smtpd \
     --with-queue-user=smtpq \
@@ -100,25 +112,49 @@ make %{?_smp_mflags}
 %install
 make install DESTDIR=%{buildroot}
 mkdir -p -m 0755 %{buildroot}/%{_localstatedir}/empty/smtpd
+
 %if 0%{?_with_systemd}
 install -Dpm 0644 %SOURCE1 %{buildroot}/%{_unitdir}/opensmtpd.service
 %else
 install -Dpm 0755 %SOURCE2 %{buildroot}/%{_initrddir}/opensmtpd
 %endif
+
 %if 0%{?_with_pam}
 install -Dpm 0644 %SOURCE3 %{buildroot}/%{_sysconfdir}/pam.d/smtp.opensmtpd
+touch %{buildroot}/%{_sysconfdir}/pam.d/smtp
 %endif
+
 rm -rf %{buildroot}/%{_bindir}/sendmail
 rm -rf %{buildroot}/%{_sbindir}/mailq
-rm -rf %{buildroot}/%{_sbindir}/newaliases
-mv %{buildroot}/%{_sbindir}/makemap %{buildroot}/%{_sbindir}/makemap.%{name}
 ln -s %{_sbindir}/smtpctl %{buildroot}/%{_sbindir}/sendmail.%{name}
 ln -s %{_sbindir}/smtpctl %{buildroot}/%{_bindir}/mailq.%{name}
-ln -s %{_sbindir}/makemap.%{name} %{buildroot}/%{_bindir}/newaliases.%{name}
+%{?el6: mkdir -p -m 0755 %{buildroot}/usr/lib}
+touch %{buildroot}/%{_sbindir}/sendmail
+touch %{buildroot}/usr/lib/sendmail
+touch %{buildroot}/%{_bindir}/mailq
+
 mv %{buildroot}/%{_mandir}/man5/aliases.5 %{buildroot}/%{_mandir}/man5/aliases.opensmtpd.5
 mv %{buildroot}/%{_mandir}/man8/sendmail.8 %{buildroot}/%{_mandir}/man8/sendmail.opensmtpd.8
-mv %{buildroot}/%{_mandir}/man8/makemap.8 %{buildroot}/%{_mandir}/man8/makemap.opensmtpd.8
 mv %{buildroot}/%{_mandir}/man8/smtpd.8 %{buildroot}/%{_mandir}/man8/smtpd.opensmtpd.8
+ln -s %{_mandir}/man8/smtpctl.8.gz %{buildroot}/%{_mandir}/man8/mailq.opensmtpd.8
+mkdir -p -m 0755 %{buildroot}/%{_mandir}/man1
+touch %{buildroot}/%{_mandir}/man1/mailq.1
+touch %{buildroot}/%{_mandir}/man5/aliases.5
+touch %{buildroot}/%{_mandir}/man8/sendmail.8
+touch %{buildroot}/%{_mandir}/man8/smtpd.8
+
+%if 0%{?_with_bdb4}
+rm -rf %{buildroot}/%{_sbindir}/newaliases
+mv %{buildroot}/%{_sbindir}/makemap %{buildroot}/%{_sbindir}/makemap.%{name}
+ln -s %{_sbindir}/makemap.%{name} %{buildroot}/%{_bindir}/newaliases.%{name}
+mv %{buildroot}/%{_mandir}/man8/makemap.8 %{buildroot}/%{_mandir}/man8/makemap.opensmtpd.8
+mv %{buildroot}/%{_mandir}/man8/newaliases.8 %{buildroot}/%{_mandir}/man8/newaliases.opensmtpd.8
+touch %{buildroot}/%{_sbindir}/makemap
+touch %{buildroot}/%{_bindir}/newaliases
+touch %{buildroot}/%{_mandir}/man1/makemap.1
+touch %{buildroot}/%{_mandir}/man1/newaliases.1
+%endif
+
 # fix aliases path in the config
 sed -i -e 's|/etc/mail/aliases|/etc/aliases|g' %{buildroot}/%{_sysconfdir}/opensmtpd/smtpd.conf
 
@@ -139,13 +175,17 @@ exit 0
 %endif
 %{_sbindir}/alternatives --install %{_sbindir}/sendmail mta %{_sbindir}/sendmail.opensmtpd 10 \
 	--slave %{_bindir}/mailq mta-mailq %{_bindir}/mailq.opensmtpd \
+	%if 0%{?_with_pam}
 	--slave /etc/pam.d/smtp mta-pam /etc/pam.d/smtp.opensmtpd \
+	%endif
+	%if 0%{?_with_bdb4}
 	--slave %{_bindir}/newaliases mta-newaliases %{_bindir}/newaliases.opensmtpd \
 	--slave %{_sbindir}/makemap mta-makemap %{_sbindir}/makemap.opensmtpd \
-	--slave /usr/lib/sendmail mta-sendmail %{_sbindir}/sendmail.opensmtpd \
 	--slave %{_mandir}/man1/makemap.1.gz mta-makemapman %{_mandir}/man8/makemap.opensmtpd.8.gz \
-	--slave %{_mandir}/man1/mailq.1.gz mta-mailqman %{_mandir}/man8/smtpctl.8.gz \
-	--slave %{_mandir}/man1/newaliases.1.gz mta-newaliasesman %{_mandir}/man8/newaliases.8.gz \
+	--slave %{_mandir}/man1/newaliases.1.gz mta-newaliasesman %{_mandir}/man8/newaliases.opensmtpd.8.gz \
+	%endif
+	--slave /usr/lib/sendmail mta-sendmail %{_sbindir}/sendmail.opensmtpd \
+	--slave %{_mandir}/man1/mailq.1.gz mta-mailqman %{_mandir}/man8/mailq.opensmtpd.8.gz \
 	--slave %{_mandir}/man5/aliases.5.gz mta-aliasesman %{_mandir}/man5/aliases.opensmtpd.5.gz \
 	--slave %{_mandir}/man8/sendmail.8.gz mta-sendmailman %{_mandir}/man8/sendmail.opensmtpd.8.gz \
 	--slave %{_mandir}/man8/smtpd.8.gz mta-smtpdman %{_mandir}/man8/smtpd.opensmtpd.8.gz \
@@ -192,26 +232,56 @@ exit 0
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/smtpd.conf
 %doc LICENSE README.md THANKS
-%{_mandir}/man5/*.5*
-%{_mandir}/man8/*.8*
+%{_mandir}/man5/aliases.opensmtpd.5.gz
+%{_mandir}/man5/forward.5.gz
+%{_mandir}/man5/smtpd.conf.5.gz
+%{_mandir}/man5/table.5.gz
+%{_mandir}/man8/mailq.opensmtpd.8.gz
+%{_mandir}/man8/sendmail.opensmtpd.8.gz
+%{_mandir}/man8/smtpd.opensmtpd.8.gz
+%{_mandir}/man8/smtpctl.8.gz
+
 %if 0%{?_with_pam}
 %config(noreplace) %{_sysconfdir}/pam.d/smtp.%{name}
+%ghost %{_sysconfdir}/pam.d/smtp
 %endif
+
+%if 0%{?_with_bdb4}
+%{_bindir}/newaliases.%{name}
+%{_sbindir}/makemap.%{name}
+%{_mandir}/man8/newaliases.opensmtpd.8.gz
+%{_mandir}/man8/makemap.opensmtpd.8.gz
+%ghost %attr(0755,root,root) %{_bindir}/newaliases
+%ghost %attr(0755,root,root) %{_sbindir}/makemap
+%ghost %{_mandir}/man1/makemap.1.gz
+%ghost %{_mandir}/man1/newaliases.1.gz
+%endif
+
 %if 0%{?_with_systemd}
 %{_unitdir}/%{name}.service
 %else
 %{_initrddir}/opensmtpd
 %endif
+
 %{_libexecdir}/%{name}
 %{_bindir}/mailq.%{name}
-%{_bindir}/newaliases.%{name}
 %{_sbindir}/sendmail.%{name}
-%{_sbindir}/makemap.%{name}
 %{_sbindir}/smtpctl
 %{_sbindir}/smtpd
+%ghost %attr(0755,root,root) %{_sbindir}/sendmail
+%ghost %attr(0755,root,root) %{_bindir}/mailq
+%ghost %attr(0755,root,root) /usr/lib/sendmail
+%ghost %{_mandir}/man1/mailq.1.gz
+%ghost %{_mandir}/man5/aliases.5.gz
+%ghost %{_mandir}/man8/sendmail.8.gz
+%ghost %{_mandir}/man8/smtpd.8.gz
 
 
 %changelog
+* Fri Jul 17 2015 Denis Fateyev <denis@fateyev.com> - 5.7.1p1-1
+- Update to 5.7.1 release
+- Small cleanup, added ghost file provides
+
 * Tue Jun 23 2015 Denis Fateyev <denis@fateyev.com> - 5.4.6p1-1
 - Update to 5.4.6 release
 
