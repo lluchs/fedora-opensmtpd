@@ -1,5 +1,5 @@
 
-## global prerelease	201506020910
+## global prerelease	201506112227
 
 %if 0%{?rhel} >= 7
 %global _with_systemd	1
@@ -16,7 +16,7 @@
 
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
-Version:	5.7.1p1
+Version:	5.7.2p1
 Release:	1%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
@@ -278,6 +278,9 @@ exit 0
 
 
 %changelog
+* Fri Oct 02 2015 Denis Fateyev <denis@fateyev.com> - 5.7.2p1-1
+- Update to 5.7.2 release
+
 * Fri Jul 17 2015 Denis Fateyev <denis@fateyev.com> - 5.7.1p1-1
 - Update to 5.7.1 release
 - Small cleanup, added ghost file provides
