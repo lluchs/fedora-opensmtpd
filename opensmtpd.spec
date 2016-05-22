@@ -1,5 +1,5 @@
 
-## global prerelease	201506112227
+## global prerelease	201602131907
 
 %if 0%{?rhel} >= 7
 %global _with_systemd	1
@@ -16,7 +16,7 @@
 
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
-Version:	5.7.3p2
+Version:	5.9.2p1
 Release:	1%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
@@ -45,7 +45,9 @@ BuildRequires:	db4-devel
 BuildRequires:	libasr-devel >= 1.0.1
 BuildRequires:	libevent-devel
 BuildRequires:	openssl-devel
+BuildRequires:	coreutils
 BuildRequires:	bison
+BuildRequires:	make
 BuildRequires:	automake
 BuildRequires:	libtool
 %if 0%{?_with_pam}
@@ -93,19 +95,20 @@ export LDFLAGS="$LDFLAGS -L%{_libdir}/libdb4"
 
 %configure \
     --sysconfdir=%{_sysconfdir}/opensmtpd \
-    --with-ca-file=%{_sysconfdir}/pki/tls/cert.pem \
+    --with-path-CAfile=%{_sysconfdir}/pki/tls/cert.pem \
     --with-mantype=man \
     %if 0%{?_with_pam}
-    --with-pam \
-    --with-pam-service=smtp \
+    --with-auth-pam=smtp \
     %endif
     %if 0%{?_with_bdb4}
-    --enable-table-db \
+    --with-table-db \
     %endif
-    --with-privsep-user=smtpd \
-    --with-queue-user=smtpq \
-    --with-privsep-path=%{_localstatedir}/empty/smtpd \
-    --with-sock-dir=%{_localstatedir}/run
+    --with-user-smtpd=smtpd \
+    --with-user-queue=smtpq \
+    --with-group-queue=smtpq \
+    --with-path-empty=%{_localstatedir}/empty/smtpd \
+    --with-path-socket=%{_localstatedir}/run \
+    --without-rpath
 
 make %{?_smp_mflags}
 
@@ -144,9 +147,8 @@ touch %{buildroot}/%{_mandir}/man8/sendmail.8
 touch %{buildroot}/%{_mandir}/man8/smtpd.8
 
 %if 0%{?_with_bdb4}
-rm -rf %{buildroot}/%{_sbindir}/newaliases
-mv %{buildroot}/%{_sbindir}/makemap %{buildroot}/%{_sbindir}/makemap.%{name}
-ln -s %{_sbindir}/makemap.%{name} %{buildroot}/%{_bindir}/newaliases.%{name}
+ln -s %{_sbindir}/smtpctl %{buildroot}/%{_sbindir}/makemap.%{name}
+ln -s %{_sbindir}/smtpctl %{buildroot}/%{_bindir}/newaliases.%{name}
 mv %{buildroot}/%{_mandir}/man8/makemap.8 %{buildroot}/%{_mandir}/man8/makemap.opensmtpd.8
 mv %{buildroot}/%{_mandir}/man8/newaliases.8 %{buildroot}/%{_mandir}/man8/newaliases.opensmtpd.8
 touch %{buildroot}/%{_sbindir}/makemap
@@ -194,6 +196,10 @@ exit 0
 if [ -d "/var/spool/smtpd/purge" ]; then
 	chmod 0700 /var/spool/smtpd/purge
 fi
+if [ -d "/var/spool/smtpd/offline" ]; then
+	chown -R root:smtpq /var/spool/smtpd/offline
+	chmod 0770 /var/spool/smtpd/offline
+fi
 exit 0
 
 %preun
@@ -228,10 +234,12 @@ exit 0
 
 
 %files
+%{!?_licensedir:%global license %doc}
 %dir %attr(0711,root,root) %{_localstatedir}/empty/smtpd
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/smtpd.conf
-%doc LICENSE README.md THANKS
+%doc README.md THANKS
+%license LICENSE
 %{_mandir}/man5/aliases.opensmtpd.5.gz
 %{_mandir}/man5/forward.5.gz
 %{_mandir}/man5/smtpd.conf.5.gz
@@ -278,6 +286,9 @@ exit 0
 
 
 %changelog
+* Fri May 20 2016 Denis Fateyev <denis@fateyev.com> - 5.9.2p1-1
+- Update to 5.9.2p1 release
+
 * Tue Feb 16 2016 Denis Fateyev <denis@fateyev.com> - 5.7.3p2-1
 - Update to 5.7.3p2 release, fixing openssl issue
 
