@@ -16,7 +16,7 @@
 
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
-Version:	5.9.2p1
+Version:	6.0.0p1
 Release:	1%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
@@ -286,6 +286,9 @@ exit 0
 
 
 %changelog
+* Fri Sep 16 2016 Denis Fateyev <denis@fateyev.com> - 6.0.0p1-1
+- Update to 6.0.0p1 release
+
 * Fri May 20 2016 Denis Fateyev <denis@fateyev.com> - 5.9.2p1-1
 - Update to 5.9.2p1 release
 
