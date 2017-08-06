@@ -1,5 +1,5 @@
 
-## global prerelease	201602131907
+## global prerelease	201702130941
 
 %if 0%{?rhel} >= 7
 %global _with_systemd	1
@@ -17,7 +17,7 @@
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
 Version:	6.0.2p1
-Release:	4%{?prerelease:.%{prerelease}}%{?dist}
+Release:	5%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
 URL:		http://www.opensmtpd.org/
@@ -42,9 +42,13 @@ BuildRequires:	libdb4-devel
 BuildRequires:	db4-devel
 %endif
 %endif
+%if 0%{?fedora} >= 26
+BuildRequires:	compat-openssl10-devel
+%else
+BuildRequires:	openssl-devel
+%endif
 BuildRequires:	libasr-devel >= 1.0.1
 BuildRequires:	libevent-devel
-BuildRequires:	openssl-devel
 BuildRequires:	coreutils
 BuildRequires:	bison
 BuildRequires:	make
@@ -286,6 +290,9 @@ exit 0
 
 
 %changelog
+* Sun Aug 06 2017 Denis Fateyev <denis@fateyev.com> - 6.0.2p1-5
+- Fixed compat-openssl10 build for Fedora
+
 * Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 6.0.2p1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
