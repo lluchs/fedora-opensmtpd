@@ -1,0 +1,19 @@
+diff --git a/openbsd-compat/reallocarray.c b/openbsd-compat/reallocarray.c
+index 9beec71..1d6bc29 100644
+--- a/openbsd-compat/reallocarray.c
++++ b/openbsd-compat/reallocarray.c
+@@ -19,6 +19,8 @@
+ 
+ #include "includes.h"
+ 
++#ifndef HAVE_REALLOCARRAY
++
+ #include <sys/types.h>
+ #include <errno.h>
+ #include <stdint.h>
+@@ -40,3 +42,5 @@ reallocarray(void *optr, size_t nmemb, size_t size)
+ 	}
+ 	return realloc(optr, size * nmemb);
+ }
++
++#endif /* HAVE_REALLOCARRAY */

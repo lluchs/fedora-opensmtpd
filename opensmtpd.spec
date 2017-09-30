@@ -17,7 +17,7 @@
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
 Version:	6.0.2p1
-Release:	5%{?prerelease:.%{prerelease}}%{?dist}
+Release:	6%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
 URL:		http://www.opensmtpd.org/
@@ -33,6 +33,8 @@ Source0:	http://www.opensmtpd.org/archives/%{name}-%{version}.tar.gz
 Source1:	opensmtpd.service
 Source2:	opensmtpd.init
 Source3:	opensmtpd.pam
+
+Patch0:		opensmtpd-fix-reallocarray.patch
 
 # not related to systemd but can set proper dependency
 %if 0%{?_with_bdb4}
@@ -87,6 +89,7 @@ back to Sendmail as a default mail daemon.
 
 %prep
 %setup -q %{?prerelease: -n %{name}-%{prerelease}p1}
+%patch0 -p1
 
 %build
 export CFLAGS="%{optflags}"
@@ -290,6 +293,9 @@ exit 0
 
 
 %changelog
+* Sat Sep 30 2017 Denis Fateyev <denis@fateyev.com> - 6.0.2p1-6
+- Fixed reallocarray interpose
+
 * Sun Aug 06 2017 Denis Fateyev <denis@fateyev.com> - 6.0.2p1-5
 - Fixed compat-openssl10 build for Fedora
 
