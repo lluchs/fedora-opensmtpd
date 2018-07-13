@@ -17,7 +17,7 @@
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
 Version:	6.0.3p1
-Release:	3%{?prerelease:.%{prerelease}}%{?dist}
+Release:	4%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
 URL:		http://www.opensmtpd.org/
@@ -293,6 +293,9 @@ exit 0
 
 
 %changelog
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 6.0.3p1-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
 * Fri May 04 2018 Denis Fateyev <denis@fateyev.com> - 6.0.3p1-3
 - Rebuild to fix libevent version bump
 
