@@ -6,7 +6,6 @@ Conflicts=sendmail.service postfix.service exim.service
 [Service]
 Type=forking
 ExecStart=/usr/sbin/smtpd
-ExecStop=/usr/sbin/smtpctl stop
 
 [Install]
 WantedBy=multi-user.target

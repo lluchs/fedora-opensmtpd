@@ -50,7 +50,7 @@ stop() {
         # Stop daemon
         echo -n $"Shutting down opensmtpd: "
         if [ -n "`pidfileofproc smtpd`" ] ; then
-	    /usr/sbin/smtpctl stop > /dev/null 2>&1 && success || failure
+	    killproc /usr/sbin/smtpd > /dev/null 2>&1 && success || failure
 	else
 	    failure $"Shutting down opensmtpd"
 	fi

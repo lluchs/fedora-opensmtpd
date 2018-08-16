@@ -12,12 +12,12 @@
 %global _with_pam	1
 
 # Berkeley DB support
-%global _with_bdb4	1
+%global _with_bdb	1
 
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
 Version:	6.0.3p1
-Release:	4%{?prerelease:.%{prerelease}}%{?dist}
+Release:	5%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
 URL:		http://www.opensmtpd.org/
@@ -37,9 +37,9 @@ Source3:	opensmtpd.pam
 Patch0:		opensmtpd-fix-reallocarray.patch
 
 # not related to systemd but can set proper dependency
-%if 0%{?_with_bdb4}
+%if 0%{?_with_bdb}
 %if 0%{?_with_systemd}
-BuildRequires:	libdb4-devel
+BuildRequires:	libdb-devel
 %else
 BuildRequires:	db4-devel
 %endif
@@ -95,9 +95,11 @@ back to Sendmail as a default mail daemon.
 export CFLAGS="%{optflags}"
 
 # db4 paths
-%if 0%{?_with_bdb4}
+%if 0%{?_with_bdb}
+%if ! 0%{?_with_systemd}
 export CFLAGS="$CFLAGS -I%{_includedir}/libdb4"
 export LDFLAGS="$LDFLAGS -L%{_libdir}/libdb4"
+%endif
 %endif
 
 %configure \
@@ -107,7 +109,7 @@ export LDFLAGS="$LDFLAGS -L%{_libdir}/libdb4"
     %if 0%{?_with_pam}
     --with-auth-pam=smtp \
     %endif
-    %if 0%{?_with_bdb4}
+    %if 0%{?_with_bdb}
     --with-table-db \
     %endif
     --with-user-smtpd=smtpd \
@@ -153,7 +155,7 @@ touch %{buildroot}/%{_mandir}/man5/aliases.5
 touch %{buildroot}/%{_mandir}/man8/sendmail.8
 touch %{buildroot}/%{_mandir}/man8/smtpd.8
 
-%if 0%{?_with_bdb4}
+%if 0%{?_with_bdb}
 ln -s %{_sbindir}/smtpctl %{buildroot}/%{_sbindir}/makemap.%{name}
 ln -s %{_sbindir}/smtpctl %{buildroot}/%{_bindir}/newaliases.%{name}
 mv %{buildroot}/%{_mandir}/man8/makemap.8 %{buildroot}/%{_mandir}/man8/makemap.opensmtpd.8
@@ -187,7 +189,7 @@ exit 0
 	%if 0%{?_with_pam}
 	--slave /etc/pam.d/smtp mta-pam /etc/pam.d/smtp.opensmtpd \
 	%endif
-	%if 0%{?_with_bdb4}
+	%if 0%{?_with_bdb}
 	--slave %{_bindir}/newaliases mta-newaliases %{_bindir}/newaliases.opensmtpd \
 	--slave %{_sbindir}/makemap mta-makemap %{_sbindir}/makemap.opensmtpd \
 	--slave %{_mandir}/man1/makemap.1.gz mta-makemapman %{_mandir}/man8/makemap.opensmtpd.8.gz \
@@ -261,7 +263,7 @@ exit 0
 %ghost %{_sysconfdir}/pam.d/smtp
 %endif
 
-%if 0%{?_with_bdb4}
+%if 0%{?_with_bdb}
 %{_bindir}/newaliases.%{name}
 %{_sbindir}/makemap.%{name}
 %{_mandir}/man8/newaliases.opensmtpd.8.gz
@@ -293,6 +295,10 @@ exit 0
 
 
 %changelog
+* Thu Aug 16 2018 Denis Fateyev <denis@fateyev.com> - 6.0.3p1-5
+- Fixed initscript and service files
+- Switched from libdb4 to libdb where possible
+
 * Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 6.0.3p1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
