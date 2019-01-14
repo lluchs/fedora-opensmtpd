@@ -17,7 +17,7 @@
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
 Version:	6.0.3p1
-Release:	5%{?prerelease:.%{prerelease}}%{?dist}
+Release:	6%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
 URL:		http://www.opensmtpd.org/
@@ -295,6 +295,9 @@ exit 0
 
 
 %changelog
+* Mon Jan 14 2019 Björn Esser <besser82@fedoraproject.org> - 6.0.3p1-6
+- Rebuilt for libcrypt.so.2 (#1666033)
+
 * Thu Aug 16 2018 Denis Fateyev <denis@fateyev.com> - 6.0.3p1-5
 - Fixed initscript and service files
 - Switched from libdb4 to libdb where possible
