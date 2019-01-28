@@ -21,7 +21,6 @@ Release:	6%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
 URL:		http://www.opensmtpd.org/
-Group:		System Environment/Daemons
 Provides:	MTA smtpd smtpdaemon server(smtp)
 
 %if 0%{?prerelease}
