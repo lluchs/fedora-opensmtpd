@@ -44,6 +44,7 @@ BuildRequires:	db4-devel
 BuildRequires:	openssl-devel
 BuildRequires:	libasr-devel >= 1.0.1
 BuildRequires:	libevent-devel
+BuildRequires:	zlib-devel
 BuildRequires:	coreutils
 BuildRequires:	bison
 BuildRequires:	make
