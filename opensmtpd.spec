@@ -16,24 +16,22 @@
 
 Summary:	Free implementation of the server-side SMTP protocol as defined by RFC 5321
 Name:		opensmtpd
-Version:	6.0.3p1
-Release:	9%{?prerelease:.%{prerelease}}%{?dist}
+Version:	6.6.2p1
+Release:	1%{?prerelease:.%{prerelease}}%{?dist}
 
 License:	ISC
-URL:		http://www.opensmtpd.org/
+URL:		https://www.opensmtpd.org/
 Provides:	MTA smtpd smtpdaemon server(smtp)
 
 %if 0%{?prerelease}
-Source0:	http://www.opensmtpd.org/archives/%{name}-%{prerelease}p1.tar.gz
+Source0:	https://www.opensmtpd.org/archives/%{name}-%{prerelease}p1.tar.gz
 %else
-Source0:	http://www.opensmtpd.org/archives/%{name}-%{version}.tar.gz
+Source0:	https://www.opensmtpd.org/archives/%{name}-%{version}.tar.gz
 %endif
 
 Source1:	opensmtpd.service
 Source2:	opensmtpd.init
 Source3:	opensmtpd.pam
-
-Patch0:		opensmtpd-fix-reallocarray.patch
 
 # not related to systemd but can set proper dependency
 %if 0%{?_with_bdb}
@@ -43,11 +41,7 @@ BuildRequires:	libdb-devel
 BuildRequires:	db4-devel
 %endif
 %endif
-%if 0%{?fedora} >= 26
-BuildRequires:	compat-openssl10-devel
-%else
 BuildRequires:	openssl-devel
-%endif
 BuildRequires:	libasr-devel >= 1.0.1
 BuildRequires:	libevent-devel
 BuildRequires:	coreutils
@@ -88,7 +82,6 @@ back to Sendmail as a default mail daemon.
 
 %prep
 %setup -q %{?prerelease: -n %{name}-%{prerelease}p1}
-%patch0 -p1
 
 %build
 export CFLAGS="%{optflags}"
@@ -246,8 +239,9 @@ exit 0
 %dir %attr(0711,root,root) %{_localstatedir}/empty/smtpd
 %dir %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/smtpd.conf
-%doc README.md THANKS
+%doc README.md
 %license LICENSE
+%{_mandir}/man1/smtp.1.gz
 %{_mandir}/man5/aliases.opensmtpd.5.gz
 %{_mandir}/man5/forward.5.gz
 %{_mandir}/man5/smtpd.conf.5.gz
@@ -280,9 +274,10 @@ exit 0
 %endif
 
 %{_libexecdir}/%{name}
+%{_bindir}/smtp
 %{_bindir}/mailq.%{name}
 %{_sbindir}/sendmail.%{name}
-%{_sbindir}/smtpctl
+%attr(2555,root,smtpq) %{_sbindir}/smtpctl
 %{_sbindir}/smtpd
 %ghost %attr(0755,root,root) %{_sbindir}/sendmail
 %ghost %attr(0755,root,root) %{_bindir}/mailq
@@ -294,6 +289,9 @@ exit 0
 
 
 %changelog
+* Fri Jan 31 2020 Lukas Werling <lukas@lwrl.de> - 6.6.2p1-1
+- Update to 6.6.2p1 release
+
 * Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 6.0.3p1-9
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
